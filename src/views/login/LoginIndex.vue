@@ -1,26 +1,72 @@
 <script setup>
-import {ref} from 'vue'
-import { User, Lock } from '@element-plus/icons-vue'
+import {ref,watch} from 'vue'
+import {User, Lock} from '@element-plus/icons-vue'
 import {userStore} from '@/stores'
-
-
-const {getToken,setToken} = userStore()
-
+import {userRegister, userLogin} from '@/api/user'
+import {useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
+const {setToken} = userStore()
+const form = ref()
 const formModel = ref({
-  username: '',
+  name: '',
   password: '',
   repassword: ''
 })
+const isRegister = ref(true)
 
-const rules = ref({})
+const router = useRouter()
 
-const register = async ()=>{
-
+const rules = {
+  name: [
+    {required: true, messgae: '请输入用户名', trigger: 'blur'},
+    {min: 2, max: 10, message: '用户名必须是 2-10位 的字符', trigger: 'blur' }
+  ],
+  password:[
+      {required: true, messgae: '请输入密码', trigger: 'blur'},
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是 6-15位 的非空字符',
+      trigger: 'blur'
+    }
+  ],
+  repassword:[
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是 6-15位 的非空字符',
+      trigger: 'blur'
+    },
+    {validator:(rule, value, callback)=>{
+        if(value !== formModel.value.password){
+            callback(new Error('两次密码输入密码不一致'))
+        }else{
+            callback()
+        }
+      }}
+  ]
 }
 
-const login = async ()=>{
-
+const register = async () => {
+  await form.value.validate()
+  await userRegister(formModel.value)
+  ElMessage.success('注册成功')
+  isRegister.value = false
 }
+
+const login = async () => {
+   await form.value.validate()
+   const res =  await userLogin(formModel.value)
+   setToken(res.data.token)
+   // setUserInfo(res.data)
+   ElMessage.success('登录成功')
+  router.push('/')
+}
+
+watch(isRegister,(value)=>{
+  formModel.value.name=""
+  formModel.value.password=""
+  formModel.value.repassword=""
+})
 </script>
 
 <template>
@@ -29,45 +75,45 @@ const login = async ()=>{
     <el-col :span="6" :offset="3" class="form">
       <!-- 注册相关表单 -->
       <el-form
-        :model="formModel"
-        :rules="rules"
-        ref="form"
-        size="large"
-        autocomplete="off"
-        v-if="isRegister"
+          :model="formModel"
+          :rules="rules"
+          ref="form"
+          size="large"
+          autocomplete="off"
+          v-if="isRegister"
       >
         <el-form-item>
           <h1>注册</h1>
         </el-form-item>
-        <el-form-item prop="username">
+        <el-form-item prop="name">
           <el-input
-            v-model="formModel.username"
-            :prefix-icon="User"
-            placeholder="请输入用户名"
+              v-model="formModel.name"
+              :prefix-icon="User"
+              placeholder="请输入用户名"
           ></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input
-            v-model="formModel.password"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="请输入密码"
+              v-model="formModel.password"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="请输入密码"
           ></el-input>
         </el-form-item>
         <el-form-item prop="repassword">
           <el-input
-            v-model="formModel.repassword"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="请输入再次密码"
+              v-model="formModel.repassword"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="请输入再次密码"
           ></el-input>
         </el-form-item>
         <el-form-item>
           <el-button
-            @click="register"
-            class="button"
-            type="primary"
-            auto-insert-space
+              @click="register"
+              class="button"
+              type="primary"
+              auto-insert-space
           >
             注册
           </el-button>
@@ -81,30 +127,30 @@ const login = async ()=>{
 
       <!-- 登录相关表单 -->
       <el-form
-        :model="formModel"
-        :rules="rules"
-        ref="form"
-        size="large"
-        autocomplete="off"
-        v-else
+          :model="formModel"
+          :rules="rules"
+          ref="form"
+          size="large"
+          autocomplete="off"
+          v-else
       >
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
-        <el-form-item prop="username">
+        <el-form-item prop="name">
           <el-input
-            v-model="formModel.username"
-            :prefix-icon="User"
-            placeholder="请输入用户名"
+              v-model="formModel.name"
+              :prefix-icon="User"
+              placeholder="请输入用户名"
           ></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input
-            v-model="formModel.password"
-            name="password"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="请输入密码"
+              v-model="formModel.password"
+              name="password"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="请输入密码"
           ></el-input>
         </el-form-item>
         <el-form-item class="flex">
@@ -115,11 +161,12 @@ const login = async ()=>{
         </el-form-item>
         <el-form-item>
           <el-button
-            @click="login"
-            class="button"
-            type="primary"
-            auto-insert-space
-            >登录</el-button
+              @click="login"
+              class="button"
+              type="primary"
+              auto-insert-space
+          >登录
+          </el-button
           >
         </el-form-item>
         <el-form-item class="flex">
@@ -136,22 +183,27 @@ const login = async ()=>{
 .login-page {
   height: 100vh;
   background-color: #fff;
+
   .bg {
     background: url('@/assets/logo2.png') no-repeat 60% center / 240px auto,
-      url('@/assets/login_bg.jpg') no-repeat center / cover;
+    url('@/assets/login_bg.jpg') no-repeat center / cover;
     border-radius: 0 20px 20px 0;
   }
+
   .form {
     display: flex;
     flex-direction: column;
     justify-content: center;
     user-select: none;
+
     .title {
       margin: 0 auto;
     }
+
     .button {
       width: 100%;
     }
+
     .flex {
       width: 100%;
       display: flex;
