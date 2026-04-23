@@ -1,9 +1,14 @@
 import express from 'express'
 import cors from 'cors'
 import { json, urlencoded } from 'express'
-
+import multer from 'multer'
+import { randomUUID } from 'crypto'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import auth from './middle/auth.js'
 import { ok, fail, generateToken } from './util.js'
+import uuid from 'uuid'
 import {
   register,
   findUserByName,
@@ -13,14 +18,36 @@ import {
   addCategory,
   updateCategory,
   getArticleList,
-  delArticle
+  delArticle,
+  addArticle,
+  updateArticle,
+  getArticleDetail,
+  getMaxId
 } from './data.js'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const uploadDir = path.join(__dirname, 'uploads')
+
+fs.mkdirSync(uploadDir, { recursive: true })
+
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, uploadDir)
+  },
+  filename(req, file, cb) {
+    const safeOriginalName = path.basename(file.originalname).replace(/\s+/g, '-')
+    cb(null, `${randomUUID()}-${safeOriginalName}`)
+  }
+})
+
+const upload = multer({ storage })
 const app = express()
 
 app.use(cors())
 app.use(urlencoded({ extended: true }))
 app.use(json())
+app.use('/uploads', express.static(uploadDir))
 app.use(auth)
 
 app.post('/login', (req, res) => {
@@ -158,6 +185,53 @@ app.post('/delArticle', (req, res) => {
   }
 
   ok({ res, msg: '删除文章成功' })
+})
+
+app.post('/addArticle', (req, res) => {
+  const data = req.body
+  data.id = getMaxId() + 1
+  data.pub_date = new Date().toLocaleString()
+  addArticle(data)
+  ok({ res, msg: '添加成功' })
+})
+
+app.post('/updateArticle', (req, res) => {
+  const data = req.body
+
+  if (!data.id) {
+    fail({ res, msg: 'id不能为空' })
+    return
+  }
+
+  updateArticle(data)
+  ok({ res, msg: '更新成功' })
+})
+
+app.get('/articleDetail', (req, res) => {
+  const { id } = req.query
+  const result = getArticleDetail(id)
+  ok({ res, msg: '获取文章详情成功', data: result })
+})
+
+app.post('/upload', upload.any(), (req, res) => {
+  const file = req.files?.[0]
+
+  if (!file) {
+    fail({ res, msg: '上传失败' })
+    return
+  }
+
+  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+
+  ok({
+    res,
+    msg: '上传成功',
+    data: {
+      url: fileUrl,
+      filename: file.filename,
+      originalname: file.originalname
+    }
+  })
 })
 
 export default app

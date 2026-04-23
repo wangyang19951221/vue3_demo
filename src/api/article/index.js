@@ -55,3 +55,36 @@ export const getArticleList = (params)=> {
         params
     )
 }
+
+export const deleteArticle = (id)=>{
+    return request(
+        '/delArticle',
+        'post',
+        {id}
+    )
+}
+
+export const addArticle = (data)=>{
+    return request(
+        '/addArticle',
+        'post',
+        data
+    )
+}
+
+export const updateArticle = (data)=>{
+    return request(
+        '/updateArticle',
+        'post',
+        data
+    )
+}
+
+export const getArticleDetail = (id)=>{
+
+    return request(
+        '/articleDetail',
+        'get',
+        {id}
+    )
+}

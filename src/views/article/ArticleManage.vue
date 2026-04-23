@@ -2,12 +2,15 @@
 import {ref} from 'vue'
 import ChannelSelect from '@/components/ChannelSelect.vue'
 import ArticleEdit from '@/components/ArticleEdit.vue'
-import {getArticleList} from "@/api/article";
+import {getArticleList,deleteArticle} from "@/api/article";
 import{Edit,Delete} from "@element-plus/icons-vue";
-
+import {ElMessage} from 'element-plus'
 const params = ref({
   cate_id: '',
-  state: ''
+  state: '',
+  pagenum:1,
+  pagesize:3,
+  total:0
 })
 const articleEditRef = ref()
 const articleList = ref([])
@@ -18,9 +21,10 @@ const onSearch = async () => {
   loading.value = true
   const res = await getArticleList(params.value)
   articleList.value = res.data.data
+  params.value.total = res.data.total
   loading.value = false
 }
-
+onSearch()
 const onReset = async () => {
   params.value = {
     cate_id: '',
@@ -29,9 +33,23 @@ const onReset = async () => {
   await onSearch()
 }
 const onAddArticle = () => {
+  articleEditRef.value.onOpenDrawer()
 }
-const onEditArticle = (row) => {
+const onEditArticle = (id) => {
+  articleEditRef.value.onOpenDrawer(id)
+}
 
+const onDeleteArticle = async (row) =>{
+  await deleteArticle(row.id)
+  ElMessage.success('删除成功')
+  onSearch()
+
+}
+const onSizeChange = async ()=>{
+  onSearch()
+}
+const onCurrentChange = async ()=>{
+  onSearch()
 }
 
 const onSuccess = ()=>{
@@ -50,14 +68,14 @@ const onSuccess = ()=>{
       <el-form-item label="文章分类:">
         <!-- Vue2 => v-model :value 和 @input 的简写 -->
         <!-- Vue3 => v-model :modelValue 和 @update:modelValue 的简写 -->
-        <channel-select v-model="params.cate_id"></channel-select>
+        <channel-select v-model="params.cate_id" class = 'el_select'></channel-select>
 
         <!-- Vue3 => v-model:cid  :cid 和 @update:cid 的简写 -->
         <!-- <channel-select v-model:cid="params.cate_id"></channel-select> -->
       </el-form-item>
       <el-form-item label="发布状态:">
         <!-- 这里后台标记发布状态，就是通过中文标记的，已发布 / 草稿 -->
-        <el-select v-model="params.state">
+        <el-select v-model="params.state" class = 'el_select'>
           <el-option label="已发布" value="已发布"></el-option>
           <el-option label="草稿" value="草稿"></el-option>
         </el-select>
@@ -90,7 +108,7 @@ const onSuccess = ()=>{
               plain
               type="primary"
               :icon="Edit"
-              @click="onEditArticle(row)"
+              @click="onEditArticle(row.id)"
           ></el-button>
           <el-button
               circle
@@ -110,7 +128,7 @@ const onSuccess = ()=>{
         :page-sizes="[2, 3, 5, 10]"
         :background="true"
         layout="jumper, total, sizes, prev, pager, next"
-        :total="total"
+        :total="params.total"
         @size-change="onSizeChange"
         @current-change="onCurrentChange"
         style="margin-top: 20px; justify-content: flex-end"
@@ -121,4 +139,10 @@ const onSuccess = ()=>{
   </page-container>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+
+.el_select {
+  width: 220px;
+}
+
+</style>

@@ -1,17 +1,16 @@
 <script setup>
 import {ref} from 'vue'
 import {getCategoryList} from '@/api/article'
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'change'])
 
 const channelList = ref([])
 
 const channelListService = async ()=>{
   const res = await getCategoryList()
-  channelList.value = res.data.data
+  channelList.value = res.data
 }
 
 channelListService()
-
 defineProps({
   modelValue: {
     type: [Number, String]
@@ -20,13 +19,19 @@ defineProps({
     type: String
   }
 })
+
+const onChange = (value) => {
+  emit('update:modelValue', value)
+  const currentChannel = channelList.value.find(channel => channel.id == value)
+  emit('change', currentChannel)
+}
 </script>
 
 <template>
   <!-- label 展示给用户看的，value 收集起来提交给后台的 -->
   <el-select
     :modelValue="modelValue"
-    @update:modelValue="emit('update:modelValue', $event)"
+    @update:modelValue="onChange"
     :style="{ width }"
   >
     <el-option
@@ -36,4 +41,5 @@ defineProps({
       :value="channel.id"
     ></el-option>
   </el-select>
+
 </template>

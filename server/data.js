@@ -47,7 +47,8 @@ export const articleList = [
     cate_id: 10001,
     cate_name: getCategoryName(10001),
     pub_date: '2026-04-21 09:00:00',
-    state: '已发布'
+    state: '已发布',
+    content: '这是 Vue 3 组合式 API 入门的文章内容'
   },
   {
     id: 20002,
@@ -55,7 +56,8 @@ export const articleList = [
     cate_id: 10001,
     cate_name: getCategoryName(10001),
     pub_date: '2026-04-20 15:30:00',
-    state: '草稿'
+    state: '草稿',
+    content: '这是 Pinia 状态管理实践的文章内容'
   },
   {
     id: 20003,
@@ -63,7 +65,8 @@ export const articleList = [
     cate_id: 10002,
     cate_name: getCategoryName(10002),
     pub_date: '2026-04-19 11:20:00',
-    state: '已发布'
+    state: '已发布',
+    content: '这是 Node.js 接口设计规范的文章内容'
   },
   {
     id: 20004,
@@ -71,7 +74,8 @@ export const articleList = [
     cate_id: 10002,
     cate_name: getCategoryName(10002),
     pub_date: '2026-04-18 18:10:00',
-    state: '草稿'
+    state: '草稿',
+    content: '这是 Express 中间件拆分思路的文章内容'
   },
   {
     id: 20005,
@@ -79,7 +83,8 @@ export const articleList = [
     cate_id: 10003,
     cate_name: getCategoryName(10003),
     pub_date: '2026-04-17 08:40:00',
-    state: '已发布'
+    state: '已发布',
+    content: '这是 MySQL 索引优化笔记的文章内容'
   },
   {
     id: 20006,
@@ -87,7 +92,8 @@ export const articleList = [
     cate_id: 10004,
     cate_name: getCategoryName(10004),
     pub_date: '2026-04-16 21:15:00',
-    state: '已发布'
+    state: '已发布',
+    content: '这是移动端适配方案总结的文章内容'
   },
   {
     id: 20007,
@@ -95,7 +101,8 @@ export const articleList = [
     cate_id: 10001,
     cate_name: getCategoryName(10001),
     pub_date: '2026-04-15 10:00:00',
-    state: '草稿'
+    state: '草稿',
+    content: '这是前端工程化常见问题的文章内容'
   },
   {
     id: 20008,
@@ -103,7 +110,8 @@ export const articleList = [
     cate_id: 10002,
     cate_name: getCategoryName(10002),
     pub_date: '2026-04-14 13:45:00',
-    state: '已发布'
+    state: '已发布',
+    content: '这是接口鉴权与 Token 流程的文章内容'
   },
   {
     id: 20009,
@@ -111,7 +119,8 @@ export const articleList = [
     cate_id: 10003,
     cate_name: getCategoryName(10003),
     pub_date: '2026-04-13 17:05:00',
-    state: '草稿'
+    state: '草稿',
+    content: '这是数据库设计避坑清单的文章内容'
   },
   {
     id: 20010,
@@ -119,7 +128,8 @@ export const articleList = [
     cate_id: 10005,
     cate_name: getCategoryName(10005),
     pub_date: '2026-04-12 09:50:00',
-    state: '已发布'
+    state: '已发布',
+    content: '这是团队协作中的代码规范的文章内容'
   }
 ]
 
@@ -177,4 +187,22 @@ export const delArticle = (id) => {
   if (index === -1) return false
   articleList.splice(index, 1)
   return true
+}
+
+export const addArticle = (data) => {
+  articleList.unshift(data)
+}
+
+export const updateArticle = (data) => {
+  const index = articleList.findIndex((item) => String(item.id) === String(data.id))
+  if (index === -1) return false
+  articleList[index] = data
+}
+
+export const getArticleDetail = (id) => {
+  return articleList.find((item) => String(item.id) === String(id))
+}
+
+export const getMaxId = () => {
+  return articleList.length ? articleList[articleList.length - 1].id : 20001
 }
