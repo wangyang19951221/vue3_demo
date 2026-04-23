@@ -1,69 +1,53 @@
 <script setup>
-import { ref } from 'vue'
-import { userUpdatePasswordService } from '@/api/user'
-import { useUserStore } from '@/stores'
-import { useRouter } from 'vue-router'
-
-const formRef = ref()
-const pwdForm = ref({
-  old_pwd: '',
-  new_pwd: '',
-  re_pwd: ''
-})
-
-const checkDifferent = (rule, value, callback) => {
-  // 校验新密码和原密码不能一样
-  if (value === pwdForm.value.old_pwd) {
-    callback(new Error('新密码不能与原密码一样'))
-  } else {
-    callback()
-  }
-}
-const checkSameAsNewPwd = (rule, value, callback) => {
-  // 校验确认密码必须和新密码一样
-  if (value !== pwdForm.value.new_pwd) {
-    callback(new Error('确认密码必须和新密码一样'))
-  } else {
-    callback()
-  }
-}
-const rules = ref({
-  old_pwd: [
-    { required: true, message: '请输入原密码', trigger: 'blur' },
-    { min: 6, max: 15, message: '原密码长度在6-15位之间', trigger: 'blur' }
-  ],
-  new_pwd: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 15, message: '新密码长度在6-15位之间', trigger: 'blur' },
-    { validator: checkDifferent, trigger: 'blur' }
-  ],
-  re_pwd: [
-    { required: true, message: '请再次输入新密码', trigger: 'blur' },
-    { min: 6, max: 15, message: '确认密码长度在6-15位之间', trigger: 'blur' },
-    { validator: checkSameAsNewPwd, trigger: 'blur' }
-  ]
-})
-
-const userStore = useUserStore()
+import {ref} from 'vue'
+import {resetPassword} from '@/api/user/index'
+import {ElMessage} from 'element-plus'
+import {userStore} from '@/stores'
+import {useRouter} from 'vue-router'
+const user = userStore()
 const router = useRouter()
+const pwdForm = ref({
+  old_pwd:'',
+  new_pwd:'',
+  re_pwd:''
+})
+const formRef = ref()
+const rules = {
 
-const submitForm = async () => {
+  old_pwd:[
+    { required: true, message: '请输入原密码', trigger: 'blur' }
+  ],
+
+  new_pwd:[
+    { required: true, message: '请输入新密码', trigger: 'blur' }
+  ],
+  re_pwd:[
+    { required: true, message: '请输入确认密码', trigger: 'blur' },{
+      validator: (rule, value, callback) => {
+        if (value !== pwdForm.value.new_pwd) {
+          callback(new Error('两次输入密码不一致'))
+        } else {
+          callback()
+        }
+      }
+    }
+  ]
+}
+const submitForm = async ()=>{
   await formRef.value.validate()
-  await userUpdatePasswordService(pwdForm.value)
-  ElMessage.success('密码修改成功')
-
-  // 密码修改成功后，退出重新登录
-  // 清空本地存储的 token 和 个人信息
-  userStore.setToken('')
-  userStore.setUser({})
-
-  // 拦截登录
+  await resetPassword(pwdForm.value)
+  ElMessage.success('修改密码成功')
+  user.setToken('')
+  user.setUserInfo({})
   router.push('/login')
 }
 
-const resetForm = () => {
-  formRef.value.resetFields()
+const resetForm = ()=>{
+  pwdForm.value.old_pwd = ''
+  pwdForm.value.new_pwd = ''
+  pwdForm.value.re_pwd = ''
 }
+
 </script>
 
 <template>

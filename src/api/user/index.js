@@ -12,3 +12,11 @@ export const userRegister = (registerReq)=>{
 export const userInfoApi = ()=>{
     return request('/userInfo','GET')
 }
+
+export const resetPassword = (resetPasswordReq)=> {
+    return request('/resetPassword','POST',resetPasswordReq)
+}
+
+export const updateUserInfo = (updateUserInfoReq)=>{
+    return request('/updateUserInfo','POST',updateUserInfoReq)
+}

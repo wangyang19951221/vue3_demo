@@ -103,7 +103,7 @@ const handleCommand = async (key) => {
         <el-dropdown placement="bottom-end" @command="handleCommand">
           <!-- 展示给用户，默认看到的 -->
           <span class="el-dropdown__box">
-            <el-avatar :src="user.userInfo.user_pic || avatar" />
+            <el-avatar :src="user.userInfo.avatar || avatar" />
             <el-icon><CaretBottom /></el-icon>
           </span>
 

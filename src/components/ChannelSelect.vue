@@ -1,6 +1,16 @@
 <script setup>
-import { artGetChannelsService } from '@/api/article.js'
-import { ref } from 'vue'
+import {ref} from 'vue'
+import {getCategoryList} from '@/api/article'
+const emit = defineEmits(['update:modelValue'])
+
+const channelList = ref([])
+
+const channelListService = async ()=>{
+  const res = await getCategoryList()
+  channelList.value = res.data.data
+}
+
+channelListService()
 
 defineProps({
   modelValue: {
@@ -10,13 +20,6 @@ defineProps({
     type: String
   }
 })
-const emit = defineEmits(['update:modelValue'])
-const channelList = ref([])
-const getChannelList = async () => {
-  const res = await artGetChannelsService()
-  channelList.value = res.data.data
-}
-getChannelList()
 </script>
 
 <template>

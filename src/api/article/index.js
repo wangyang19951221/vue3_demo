@@ -1,5 +1,20 @@
 import {request} from '@/utils/request'
 
+export const artGetListService = (params) => {
+    return request(
+        '/articleList',
+        'get',
+        params
+    )
+}
+
+export const artDelService = (id) => {
+    return request(
+        '/delArticle',
+        'post',
+        {id}
+    )
+}
 
 export const getCategoryList = ()=>{
     return request(
@@ -30,5 +45,13 @@ export const updCategory = (id,cate_name,cate_alias)=>{
         '/updateCategory',
         'post',
         {id,cate_name,cate_alias}
+    )
+}
+
+export const getArticleList = (params)=> {
+    return request(
+        '/articleList',
+        'get',
+        params
     )
 }

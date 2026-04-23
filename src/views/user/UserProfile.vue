@@ -1,32 +1,19 @@
 <script setup>
-import PageContainer from '@/components/PageContainer.vue'
-import { ref } from 'vue'
-import { useUserStore } from '@/stores'
-import { userUpdateInfoService } from '@/api/user'
-
+import {ref} from 'vue'
+import {ElMessage} from "element-plus"
+import {updateUserInfo} from '@/api/user/index.js'
+import {userStore} from '@/stores'
+import {useRouter} from 'vue-router'
+const user = userStore()
 const formRef = ref()
-
-// 是在使用仓库中数据的初始值 (无需响应式) 解构无问题
-const {
-  user: { email, id, nickname, username },
-  getUser
-} = useUserStore()
-
-const form = ref({
-  id,
-  username,
-  nickname,
-  email
-})
-
+const form = ref(user.userInfo)
+const router = useRouter()
 const rules = ref({
+  name: [
+    {required: true, message: "请输入用户名", trigger: "blur"},
+  ],
   nickname: [
-    { required: true, message: '请输入用户昵称', trigger: 'blur' },
-    {
-      pattern: /^\S{2,10}/,
-      message: '昵称长度在2-10个非空字符',
-      trigger: 'blur'
-    }
+    {required: true, message: "请输入用户昵称", trigger: "blur"},
   ],
   email: [
     { required: true, message: '请输入用户邮箱', trigger: 'blur' },
@@ -39,28 +26,26 @@ const rules = ref({
 })
 
 const submitForm = async () => {
-  // 等待校验结果
   await formRef.value.validate()
-  // 提交修改
-  await userUpdateInfoService(form.value)
-  // 通知 user 模块，进行数据的更新
-  getUser()
-  // 提示用户
-  ElMessage.success('修改成功')
+  await updateUserInfo(form.value)
+  user.getUserInfo()
+  ElMessage.success("修改成功")
+  router.push("/")
 }
+
 </script>
 <template>
   <page-container title="基本资料">
     <!-- 表单部分 -->
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <el-form-item label="登录名称">
-        <el-input v-model="form.username" disabled></el-input>
+        <el-input v-model="form.name" disabled ></el-input>
       </el-form-item>
       <el-form-item label="用户昵称" prop="nickname">
-        <el-input v-model="form.nickname"></el-input>
+        <el-input v-model="form.nickname" ></el-input>
       </el-form-item>
       <el-form-item label="用户邮箱" prop="email">
-        <el-input v-model="form.email"></el-input>
+        <el-input v-model="form.email" ></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm">提交修改</el-button>
