@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import {fail, SECRET_KEY} from '../util.js'
 
-const whiteList = ['/login','/register']
+const whiteList = ['/login','/register','/upload']
 
 function auth(req, res, next) {
     try {

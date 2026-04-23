@@ -8,7 +8,6 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import auth from './middle/auth.js'
 import { ok, fail, generateToken } from './util.js'
-import uuid from 'uuid'
 import {
   register,
   findUserByName,
